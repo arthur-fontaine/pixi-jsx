@@ -6,7 +6,7 @@ describe("props types", () => {
   it("Sprite props", () => {
     expectTypeOf<PixiComponentProps<typeof Sprite>>().toExtend<{
       construct: ConstructorParameters<typeof Sprite>;
-      x?: number;
+      x?: number | (() => number);
     }>();
   });
 });

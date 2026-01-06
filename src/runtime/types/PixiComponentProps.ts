@@ -2,6 +2,7 @@
 
 import type { Graphics } from "pixi.js";
 import type { DrawCallback } from "./DrawCallback.ts";
+import type { MaybeSignal } from "./MaybeSignal.ts";
 import type { PixiComponents } from "./PixiComponent.ts";
 
 export type PixiComponentProps<C extends PixiComponents> =
@@ -18,5 +19,5 @@ export type PropsForGraphics<T> = T extends Graphics
   : unknown;
 
 export type PropsFromInstance<C extends PixiComponents> = Partial<{
-  [K in keyof InstanceType<C>]: InstanceType<C>[K];
+  [K in keyof InstanceType<C>]: MaybeSignal<InstanceType<C>[K]>;
 }>;

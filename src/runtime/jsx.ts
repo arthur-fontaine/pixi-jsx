@@ -1,4 +1,6 @@
+import { effect } from "alien-signals";
 import type { Container, DisplayObject, Graphics } from "pixi.js";
+import { assertType } from "../lib/assertType.ts";
 import type { AnyConstructor } from "../lib/types/AnyConstructor.ts";
 import type { DrawCallback } from "./types/DrawCallback.ts";
 import type { PixiComponents } from "./types/PixiComponent.ts";
@@ -18,6 +20,7 @@ export function jsx<C extends PixiComponents>(
   if (props.children) addChildren(container, props.children);
   if ("draw" in props)
     drawGraphics(container as Graphics, props.draw as DrawCallback);
+  applyProps(instance, props as never);
 
   return instance;
 }
@@ -34,6 +37,20 @@ function getContainer(instance: DisplayObject) {
 function drawGraphics(graphics: Graphics, draw: DrawCallback) {
   graphics.clear();
   draw(graphics);
+}
+
+function applyProps(
+  instance: DisplayObject,
+  props: Record<keyof typeof instance, unknown>
+) {
+  for (const key in props) {
+    if (!Object.hasOwn(props, key)) continue;
+    assertType<never>(key);
+    instance[key] = props[key];
+    effect(() => {
+      instance[key] = props[key];
+    });
+  }
 }
 
 function addChildren(

@@ -10,7 +10,9 @@
     "format": "biome format",
     "format:fix": "biome format --write",
     "build": "tsdown src/index.ts",
-    "prepare": "husky"
+    "prepare": "husky",
+    "test": "vitest run --typecheck",
+    "test:watch": "vitest --typecheck"
   },
   "keywords": [],
   "author": "",
@@ -26,9 +28,11 @@
     "@tsconfig/strictest": "^2.0.8",
     "husky": "^9.1.7",
     "lint-staged": "^16.2.7",
+    "pixi.js": "^7.4.3",
     "tsdown": "0.19.0-beta.3",
     "typescript": "^5.9.3",
-    "ultracite": "7.0.8"
+    "ultracite": "7.0.8",
+    "vitest": "^4.0.16"
   },
   "lint-staged": {
     "*.{js,jsx,ts,tsx,json,jsonc,css,scss,md,mdx}": [

@@ -25,7 +25,7 @@ type PropsFromConstructor<C extends PixiComponent> =
 
 export type PropsForGraphics<T> = T extends Graphics
   ? { draw: DrawCallback }
-  : unknown;
+  : { draw?: unknown };
 
 export type PropsFromInstance<C extends PixiComponent> = Partial<{
   [K in keyof InstanceType<C>]: MaybeSignal<InstanceType<C>[K]>;

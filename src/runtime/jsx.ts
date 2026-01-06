@@ -14,9 +14,13 @@ export const setPixi = (p: PixiComponents) => {
 
 export function jsx<C extends PixiComponent>(
   type: C,
-  props: WithChildren<PixiComponentProps<C>>,
+  props: WithChildren<PixiComponentProps<C>> | null,
   _key: never | undefined = undefined
 ) {
+  if (typeof type === "function") {
+    return (type as unknown as (...props: unknown[]) => never)(props);
+  }
+
   if (typeof type === "string") {
     const componentName = (type as string).startsWith("pixi")
       ? (type as string).slice(4)
@@ -25,15 +29,16 @@ export function jsx<C extends PixiComponent>(
     type = pixi[componentName as keyof PixiComponents] as C;
   }
 
-  const instance = new (type as AnyConstructor)(props.construct);
+  const { construct, children, draw, ...rest } = props || {};
+
+  const instance = new (type as AnyConstructor)(construct);
 
   const container = getContainer(instance);
   if (!container) return instance;
 
-  if (props.children) addChildren(container, props.children);
-  if ("draw" in props)
-    drawGraphics(container as Graphics, props.draw as DrawCallback);
-  applyProps(instance, props as never);
+  if (children) addChildren(container, children);
+  if (draw) drawGraphics(container as Graphics, draw as DrawCallback);
+  applyProps(instance, rest as never);
 
   return instance;
 }
@@ -61,7 +66,6 @@ function applyProps(
   for (const key in props) {
     if (!Object.hasOwn(props, key)) continue;
     assertType<never>(key);
-    instance[key] = props[key];
     effect(() => {
       instance[key] = props[key];
     });
@@ -74,6 +78,10 @@ function addChildren(
 ) {
   for (const child of Array.isArray(children) ? children : [children]) {
     if (!child) continue;
+    if (Array.isArray(child)) {
+      addChildren(container, child);
+      continue;
+    }
     container.addChild(child);
   }
 }

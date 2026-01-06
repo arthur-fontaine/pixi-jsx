@@ -1,18 +1,31 @@
 import { effect } from "alien-signals";
 import type { Container, DisplayObject, Graphics } from "pixi.js";
-import { assertType } from "../lib/assertType.ts";
-import type { AnyConstructor } from "../lib/types/AnyConstructor.ts";
-import type { DrawCallback } from "./types/DrawCallback.ts";
-import type { PixiComponents } from "./types/PixiComponent.ts";
-import type { PixiComponentProps } from "./types/PixiComponentProps.ts";
-import type { WithChildren } from "./types/WithChildren.ts";
+import { assertType } from "../lib/assertType.js";
+import type { AnyConstructor } from "../lib/types/AnyConstructor.js";
+import type { DrawCallback } from "./types/DrawCallback.js";
+import type { PixiComponent, PixiComponents } from "./types/PixiComponent.js";
+import type { PixiComponentProps } from "./types/PixiComponentProps.js";
+import type { WithChildren } from "./types/WithChildren.js";
 
-export function jsx<C extends PixiComponents>(
+let pixi: PixiComponents;
+export const setPixi = (p: PixiComponents) => {
+  pixi = p;
+};
+
+export function jsx<C extends PixiComponent>(
   type: C,
   props: WithChildren<PixiComponentProps<C>>,
   _key: never | undefined = undefined
 ) {
-  const instance = new (type as AnyConstructor)(props);
+  if (typeof type === "string") {
+    const componentName = (type as string).startsWith("pixi")
+      ? (type as string).slice(4)
+      : type;
+    // biome-ignore lint/style/noParameterAssign: needed
+    type = pixi[componentName as keyof PixiComponents] as C;
+  }
+
+  const instance = new (type as AnyConstructor)(props.construct);
 
   const container = getContainer(instance);
   if (!container) return instance;
@@ -24,6 +37,8 @@ export function jsx<C extends PixiComponents>(
 
   return instance;
 }
+
+jsx.fragment = jsx;
 
 function getContainer(instance: DisplayObject) {
   const container = (
@@ -64,3 +79,17 @@ function addChildren(
 }
 
 export const jsxs = jsx;
+
+declare global {
+  type PixiIntrinsicElements = {
+    [K in keyof PixiComponents as `pixi${K}`]: PixiComponentProps<
+      PixiComponents[K]
+    > &
+      WithChildren<unknown>;
+  };
+
+  namespace JSX {
+    type Element = DisplayObject;
+    interface IntrinsicElements extends PixiIntrinsicElements {}
+  }
+}

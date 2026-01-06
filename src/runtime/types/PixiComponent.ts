@@ -10,4 +10,6 @@ export type PixiComponents = {
   ) => any
     ? PixiType[K]
     : never;
-}[keyof PixiType];
+};
+
+export type PixiComponent = PixiComponents[keyof PixiComponents];

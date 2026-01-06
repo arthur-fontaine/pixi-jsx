@@ -5,7 +5,11 @@
     "rules": {
       "style": {
         "useBlockStatements": "off",
-        "useConsistentTypeDefinitions": "off"
+        "useConsistentTypeDefinitions": "off",
+        "noNamespace": "off"
+      },
+      "performance": {
+        "noNamespaceImport": "off"
       }
     }
   }

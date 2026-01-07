@@ -1,4 +1,4 @@
-import { effect } from "alien-signals";
+import { effect, isComputed, isSignal } from "alien-signals";
 import type { Container, DisplayObject, Graphics } from "pixi.js";
 import { assertType } from "../lib/assertType.js";
 import type { AnyConstructor } from "../lib/types/AnyConstructor.js";
@@ -67,7 +67,15 @@ function applyProps(
     if (!Object.hasOwn(props, key)) continue;
     assertType<never>(key);
     effect(() => {
-      instance[key] = props[key];
+      const prop = props[key] as unknown;
+      if (
+        typeof prop === "function" &&
+        (isSignal(prop as never) || isComputed(prop as never))
+      ) {
+        instance[key] = prop() as never;
+      } else {
+        instance[key] = props[key];
+      }
     });
   }
 }

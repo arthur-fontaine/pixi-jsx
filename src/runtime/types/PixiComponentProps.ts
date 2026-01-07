@@ -8,7 +8,7 @@ import type { PixiComponent } from "./PixiComponent.ts";
 export type PixiComponentProps<C extends PixiComponent> =
   PropsFromConstructor<C> &
     PropsForGraphics<InstanceType<C>> &
-    PropsFromInstance<C>;
+    PropsFromInstance<C> & { ref?: (instance: InstanceType<C>) => void };
 
 type IsAllOptional<T extends readonly unknown[]> = T extends []
   ? true

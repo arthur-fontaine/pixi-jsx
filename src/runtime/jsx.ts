@@ -29,9 +29,11 @@ export function jsx<C extends PixiComponent>(
     type = pixi[componentName as keyof PixiComponents] as C;
   }
 
-  const { construct, children, draw, ...rest } = props || {};
+  const { construct, children, draw, ref, ...rest } = props || {};
 
   const instance = new (type as AnyConstructor)(construct);
+
+  if (ref) applyRef(ref, instance);
 
   const container = getContainer(instance);
   if (!container) return instance;
@@ -44,6 +46,10 @@ export function jsx<C extends PixiComponent>(
 }
 
 jsx.fragment = jsx;
+
+function applyRef<T>(ref: (instance: T) => void, instance: T) {
+  ref(instance);
+}
 
 function getContainer(instance: DisplayObject) {
   const container = (

@@ -1,3 +1,3 @@
-import type { signal } from "alien-signals";
+import type { ReadableSignal } from "./ReadableSignal.ts";
 
-export type MaybeSignal<T> = T | ReturnType<typeof signal<T>>;
+export type MaybeSignal<T> = T | ReadableSignal<T>;

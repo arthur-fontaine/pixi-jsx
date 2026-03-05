@@ -11,6 +11,12 @@ let pixi: PixiComponents;
 export const setPixi = (p: PixiComponents) => {
   pixi = p;
 };
+export const getPixi = () => {
+  if (!pixi) {
+    throw new Error("Pixi components not set. Please call setPixi() first.");
+  }
+  return pixi;
+};
 
 export function jsx<C extends PixiComponent>(
   type: C,

@@ -13,7 +13,7 @@
     "format": "biome format",
     "format:fix": "biome format --write",
     "build": "tsdown src/index.ts",
-    "prepare": "husky",
+    "postinstall": "husky",
     "test": "vitest run --typecheck",
     "test:watch": "vitest --typecheck"
   },

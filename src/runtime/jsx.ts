@@ -1,11 +1,13 @@
-import { effect, isComputed, isSignal } from "alien-signals";
+import { effect } from "alien-signals";
 import type { Container, DisplayObject, Graphics } from "pixi.js";
 import { assertType } from "../lib/assertType.js";
 import type { AnyConstructor } from "../lib/types/AnyConstructor.js";
+import type { Children } from "./types/Children.ts";
 import type { DrawCallback } from "./types/DrawCallback.js";
+import type { MaybeArray } from "./types/MaybeArray.ts";
 import type { PixiComponent, PixiComponents } from "./types/PixiComponent.js";
 import type { PixiComponentProps } from "./types/PixiComponentProps.js";
-import type { WithChildren } from "./types/WithChildren.js";
+import { isReadableSignal } from "./utils/isReadableSignal.ts";
 
 let pixi: PixiComponents;
 export const setPixi = (p: PixiComponents) => {
@@ -20,8 +22,8 @@ export const getPixi = () => {
 
 export function jsx<C extends PixiComponent>(
   type: C,
-  props: WithChildren<PixiComponentProps<C>> | null,
-  _key: never | undefined = undefined
+  props: PixiComponentProps<C> | null,
+  ...children: Children[]
 ) {
   if (typeof type === "function") {
     return (type as unknown as (...props: unknown[]) => never)(props);
@@ -35,7 +37,7 @@ export function jsx<C extends PixiComponent>(
     type = pixi[componentName as keyof PixiComponents] as C;
   }
 
-  const { construct, children, draw, ref, ...rest } = props || {};
+  const { construct, draw, ref, ...rest } = props || {};
 
   const instance = new (type as AnyConstructor)(construct);
 
@@ -80,10 +82,7 @@ function applyProps(
     assertType<never>(key);
     effect(() => {
       const prop = props[key] as unknown;
-      if (
-        typeof prop === "function" &&
-        (isSignal(prop as never) || isComputed(prop as never))
-      ) {
+      if (isReadableSignal(prop)) {
         instance[key] = prop() as never;
       } else {
         instance[key] = props[key];
@@ -92,14 +91,20 @@ function applyProps(
   }
 }
 
-function addChildren(
-  container: Container,
-  children: WithChildren<Record<string, unknown>>["children"]
-) {
+function addChildren(container: Container, children: MaybeArray<Children>) {
   for (const child of Array.isArray(children) ? children : [children]) {
     if (!child) continue;
     if (Array.isArray(child)) {
       addChildren(container, child);
+      continue;
+    }
+    if (isReadableSignal(child)) {
+      const controlContainer = new pixi.Container();
+      effect(() => {
+        controlContainer.removeChildren();
+        addChildren(controlContainer, child());
+      });
+      addChildren(container, controlContainer);
       continue;
     }
     container.addChild(child);
@@ -112,8 +117,7 @@ declare global {
   type PixiIntrinsicElements = {
     [K in keyof PixiComponents as `pixi${K}`]: PixiComponentProps<
       PixiComponents[K]
-    > &
-      WithChildren<unknown>;
+    >;
   };
 
   namespace JSX {

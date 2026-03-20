@@ -4,6 +4,7 @@
   "linter": {
     "rules": {
       "style": {
+        "useFilenamingConvention": "off",
         "useBlockStatements": "off",
         "useConsistentTypeDefinitions": "off",
         "noNamespace": "off"
